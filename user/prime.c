@@ -2,7 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #define MAXN 35
-#define MAXL 10
+#define MAXL 8
 
 int nn = 99;
 
@@ -38,13 +38,13 @@ int main()
     }
     if(pid != 0)
     {
+        close(p[0]);
         int cnt_1 = 1;
         write(p[1], (const void*)&cnt_1, 4);
         for(int i=3; i<=MAXN; i+=2)
         {
             write(p[1], (const void*)(&i), 4);     //pass all the odd nums
         }
-
         write(p[1], (const void*)(&nn), 4);     //pass all the odd nums     
         close(p[1]);        //close write pipe
         wait(0);
@@ -60,11 +60,11 @@ int main()
             fprintf(1, "prime: This Proc have a count of %d\n", cnt);
             if(cnt < MAXL)
             {
+                cnt++;
                 if(pipe(pp) < 0)
                 {
                     fprintf(2, "prime: Fail to create pipe\n");
                 }
-                cnt++;
                 pid = fork();
                 if(pid < 0)
                 {
@@ -72,22 +72,21 @@ int main()
                 }
                 if(pid != 0)
                 {
-                    write(pp[1], (const void*)&cnt, 4);
-                    if(close(p[0]) < 0)
+                    close(pp[0]);
+                    if(write(pp[1], (const void*)&cnt, 4) < 0)
                     {
-                        fprintf(2, "prime: fail to close\n");
+                        fprintf(2, "prime: write failed\n");
                     }
-                    if(close(pp[1]) < 0)
-                    {
-                        fprintf(2, "prime: fail to close\n");
-                    }
+                    close(pp[1]);
+                    close(p[0]);
                     wait(0);
                     exit(0);
                 }
                 else
                 {
                     close(pp[1]);
-                    p[0] = pp[0];
+                    p[0] = dup(pp[0]);
+                    close(pp[0]);
                 }
             }
             else
