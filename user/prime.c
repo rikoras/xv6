@@ -2,7 +2,11 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #define MAXN 35
+<<<<<<< HEAD
 #define MAXL 8
+=======
+#define MAXL 11
+>>>>>>> tmp
 
 int nn = 99;
 
@@ -56,8 +60,9 @@ int main()
         {
             int pid = -1;
             my_read(p[0], (char*)&buf, 4);
+            //fprintf(1, "r p%d %d\n", p[0], buf);
             int cnt = buf;
-            fprintf(1, "prime: This Proc have a count of %d\n", cnt);
+            //fprintf(1, "T%d\n", cnt);
             if(cnt < MAXL)
             {
                 cnt++;
@@ -73,9 +78,38 @@ int main()
                 if(pid != 0)
                 {
                     close(pp[0]);
+<<<<<<< HEAD
                     if(write(pp[1], (const void*)&cnt, 4) < 0)
                     {
                         fprintf(2, "prime: write failed\n");
+=======
+                    
+                    if(write(pp[1], (const void*)&cnt, 4) < 0)
+                    {
+                        fprintf(1, "prime: faile to write\n");
+                    }
+                    while(1)
+                    {
+                        my_read(p[0], (char*)&buf, 4);
+                        if(buf == 99)
+                        {
+                            //fprintf(1, "%de\n", cnt-1);
+                            break;
+                        }
+                        if(first == -1)
+                        {
+                            //fprintf(1, "p:%d,%d\n", buf, cnt-1);      //print prime
+                            fprintf(1, "prime: %d\n", buf);      //print prime
+                            first = buf;
+                        }
+                        else
+                        {
+                            if(buf % first != 0)
+                            {
+                                write(pp[1], (const void*)&buf, 4);
+                            }
+                        }
+>>>>>>> tmp
                     }
                     close(pp[1]);
                     close(p[0]);
@@ -84,9 +118,20 @@ int main()
                 }
                 else
                 {
+<<<<<<< HEAD
                     close(pp[1]);
                     p[0] = dup(pp[0]);
                     close(pp[0]);
+=======
+                    p[0] = dup(pp[0]);
+                    if(p[0] == -1)
+                    {
+                        //fprintf(1, "fd, %d\n", cnt);
+                        exit(0);
+                    }
+                    close(pp[0]);
+                    close(pp[1]);
+>>>>>>> tmp
                 }
             }
             else
