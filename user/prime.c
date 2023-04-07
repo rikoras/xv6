@@ -55,17 +55,16 @@ int main()
         while(1)
         {
             int pid = -1;
-            int first = -1;
             my_read(p[0], (char*)&buf, 4);
             int cnt = buf;
             fprintf(1, "prime: This Proc have a count of %d\n", cnt);
             if(cnt < MAXL)
             {
-                cnt++;
                 if(pipe(pp) < 0)
                 {
-                    fprintf(2, "prime: fail to create pipe\n");
+                    fprintf(2, "prime: Fail to create pipe\n");
                 }
+                cnt++;
                 pid = fork();
                 if(pid < 0)
                 {
@@ -74,35 +73,20 @@ int main()
                 if(pid != 0)
                 {
                     write(pp[1], (const void*)&cnt, 4);
-                    while(1)
+                    if(close(p[0]) < 0)
                     {
-                        my_read(p[0], (char*)&buf, 4);
-                        if(buf == 99)
-                        {
-                            fprintf(1, "prime: %d proc end\n", cnt-1);
-                            break;
-                        }
-                        if(first == -1)
-                        {
-                            first = buf;
-                            //fprintf(1, "%d\n", buf);
-                        }
-                        else
-                        {
-                            if(buf % first != 0)
-                            {
-                                write(pp[1], (const void*)&buf, 4);
-                            }
-                        }
+                        fprintf(2, "prime: fail to close\n");
                     }
-                    write(pp[1], (const void*)&nn, 4);
-                    close(p[0]);
-                    close(pp[1]);
+                    if(close(pp[1]) < 0)
+                    {
+                        fprintf(2, "prime: fail to close\n");
+                    }
                     wait(0);
                     exit(0);
                 }
                 else
                 {
+                    close(pp[1]);
                     p[0] = pp[0];
                 }
             }
