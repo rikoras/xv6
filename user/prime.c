@@ -2,11 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #define MAXN 35
-<<<<<<< HEAD
-#define MAXL 8
-=======
 #define MAXL 11
->>>>>>> tmp
 
 int nn = 99;
 
@@ -78,11 +74,6 @@ int main()
                 if(pid != 0)
                 {
                     close(pp[0]);
-<<<<<<< HEAD
-                    if(write(pp[1], (const void*)&cnt, 4) < 0)
-                    {
-                        fprintf(2, "prime: write failed\n");
-=======
                     
                     if(write(pp[1], (const void*)&cnt, 4) < 0)
                     {
@@ -109,7 +100,6 @@ int main()
                                 write(pp[1], (const void*)&buf, 4);
                             }
                         }
->>>>>>> tmp
                     }
                     close(pp[1]);
                     close(p[0]);
@@ -118,11 +108,6 @@ int main()
                 }
                 else
                 {
-<<<<<<< HEAD
-                    close(pp[1]);
-                    p[0] = dup(pp[0]);
-                    close(pp[0]);
-=======
                     p[0] = dup(pp[0]);
                     if(p[0] == -1)
                     {
@@ -131,7 +116,6 @@ int main()
                     }
                     close(pp[0]);
                     close(pp[1]);
->>>>>>> tmp
                 }
             }
             else
