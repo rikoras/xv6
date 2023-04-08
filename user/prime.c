@@ -2,9 +2,10 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #define MAXN 80
-#define MAXL 15
+#define MAXL 20
 
 int nn = 99;            //nn for ninety-nine: end
+int fd;
 
 int my_read(int fd, char* buf, int size)
 {
@@ -31,6 +32,7 @@ int main()
         fprintf(2, "prime: pipe failed\n");
         exit(1);
     }
+    fd = p[0];
     int pid = fork();
     if(pid < 0)
     {
@@ -46,8 +48,8 @@ int main()
         {
             write(p[1], (const void*)(&i), 4);     //pass all the odd nums
         }
-        write(p[1], (const void*)(&nn), 4);         //pass end signal     
-        close(p[1]);                                //close write pipe
+        write(p[1], (const void*)(&nn), 4);         //pass end signal    
+        close(p[1]);                                //close write pipe 
         wait(0);
         exit(0);
     }
@@ -57,7 +59,7 @@ int main()
         {
             int pid = -1;
             int first = -1;
-            int err = my_read(p[0], (char*)&buf, 4);    //read stage cnt
+            int err = my_read(fd, (char*)&buf, 4);    //read stage cnt
             if(err == -1)
             {
                 fprintf(2, "prime: fail to read\n");
@@ -66,12 +68,17 @@ int main()
             int cnt = buf;
             if(cnt < MAXL)
             {
-                cnt++;
-                if(pipe(pp) < 0)
+                
+                while(pipe(pp) < 0)
                 {
-                    fprintf(2, "prime: Fail to create pipe\n");
-                    exit(1);
+                    
+                    fprintf(2, "f");
+                    //exit(1);
                 }
+
+                cnt++;
+                fprintf(1, "%d %d %d\n", pp[0], pp[1], fd);
+
                 pid = fork();
                 if(pid < 0)
                 {
@@ -81,6 +88,9 @@ int main()
                 if(pid != 0)
                 {
                     close(pp[0]);
+
+                    fprintf(1, "c %d\n", pp[0]);                //c1
+
                     if(write(pp[1], (const void*)&cnt, 4) < 0)
                     {
                         fprintf(2, "prime: faile to write\n");
@@ -88,7 +98,7 @@ int main()
                     }
                     while(1)
                     {
-                        my_read(p[0], (char*)&buf, 4);
+                        my_read(fd, (char*)&buf, 4);
                         if(buf == 99)       //received 99 for end
                         {
                             write(pp[1], (char*)&nn, 4);
@@ -97,7 +107,7 @@ int main()
                         if(first == -1)
                         {
                             //fprintf(1, "prime: %d\n", buf);      //print prime
-                            fprintf(1, "p:%d\n", buf);      //print prime
+                            //fprintf(1, "p:%d\n", buf);      //print prime
                             first = buf;
                         }
                         else
@@ -109,21 +119,23 @@ int main()
                         }
                     }
                     close(pp[1]);
-                    close(p[0]);
+                    close(fd);
+                    fprintf(1, "c2 %d\n", pp[0]);       //c2
+                    
                     wait(0);
                     exit(0);
                 }
                 else
                 {
                     close(pp[1]);
-                    p[0] = dup(pp[0]);
+                    fd = pp[0];
                     if(p[0] == -1)
                     {
                         fprintf(2, "prime: fail to dup\n");
                         close(pp[0]);
                         exit(1);
                     }
-                    close(pp[0]);
+                    //close(pp[0]);
                 }
             }
             else

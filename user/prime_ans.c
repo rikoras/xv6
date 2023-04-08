@@ -1,59 +1,67 @@
+//
+// Created by os on 11/15/21.
+//
+
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
-
-void exec_pipe(int fd)
-{
-    int num;
-    read(fd, &num, 4);
-    printf("Thead(%d) prime %d\n", getpid(), num);
-
+void solve(){
+    int v;
+    int sv = 0;
     int p[2];
-    pipe(p);
-    int tmp = -1;
-    while (1) {
-        int n = read(fd, &tmp, 4);
-        if (n<= 0) {
-            break;
+    int son = 0;
+    while(read(0,&v,4)!=0){
+        //char buf[100];
+        //int cnt = read(0,buf,100);
+        //printf("%d: recv %d\n",getpid(),v);
+
+        if(sv == 0){
+            sv=v;
+            printf("prime %d\n",sv);
+        }else if(v%sv){
+            //printf("else");
+            if(!son){
+                pipe(p);
+                int r = dup(0);
+                close(0);
+                dup(p[0]);
+                close(p[0]);
+                if(fork()){
+                    son=1;
+                    close(0);
+                    dup(r);
+                }else{
+                    sv=0;
+                    close(p[1]);
+                    continue;
+                }
+            }
+
+            write(p[1],(void *)&v,4);
+
         }
-        if (tmp % num != 0) {
-            //printf(“%d writing %d and n is: %d\n”, getpid(), tmp, n);*
-            write(p[1], (const void*)&tmp, 4);
-        }
     }
-    if (tmp == -1) {
+
+    close(0);
+    if(son){
         close(p[1]);
-        close(p[0]);
-        close(fd);
-        return;
-    }
-    int pid = fork();
-    if (pid == 0) {
-        close(p[1]);
-        close(fd);
-        exec_pipe(p[0]);
-        close(p[0]);
-    }
-    else {
-        close(p[1]);
-        close(p[0]);
-        close(fd);
         wait(0);
     }
+    exit(0);
 }
-
-int
-main(int argc, char **argv[])
+int main(int argc, char *argv[])
 {
-  int p[2];
-  pipe(p);
-  for (int i = 2; i<80; i++) {
-      int n = i;
-      write(p[1], &n, 4);
-  }
-  close(p[1]);
-  exec_pipe(p[0]);
-  close(p[0]);
-
-  exit(1);
+    int p[2];
+    pipe(p);
+    close(0);
+    dup(p[0]);
+    close(p[0]);
+    int i;
+    for(i=2;i<=80;i++){
+        write(p[1],(void *)&i,4);
+    }
+    close(p[1]);
+    solve();
+    exit(0);
+    return 0;
 }
