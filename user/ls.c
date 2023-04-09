@@ -27,7 +27,7 @@ ls(char *path)
 {
   char buf[512], *p;
   int fd;
-  struct dirent de;
+  struct dirent de;   
   struct stat st;
 
   if((fd = open(path, 0)) < 0){
@@ -39,7 +39,7 @@ ls(char *path)
     fprintf(2, "ls: cannot stat %s\n", path);
     close(fd);
     return;
-  }
+  } 
 
   switch(st.type){
   case T_FILE:
@@ -54,11 +54,14 @@ ls(char *path)
     strcpy(buf, path);
     p = buf+strlen(buf);
     *p++ = '/';
+    //printf("!: %s\n", buf);
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
-      if(de.inum == 0)
+      if(de.inum == 0)                              
         continue;
       memmove(p, de.name, DIRSIZ);
       p[DIRSIZ] = 0;
+
+
       if(stat(buf, &st) < 0){
         printf("ls: cannot stat %s\n", buf);
         continue;
